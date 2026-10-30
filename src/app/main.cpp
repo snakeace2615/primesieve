@@ -81,6 +81,7 @@ bool has_avx512_vbmi2();
 void help(int exitCode);
 void version();
 void stressTest(const CmdOptions& opts);
+void maintainLoad(const CmdOptions& opts);
 void test();
 
 using primesieve::Array;
@@ -369,6 +370,7 @@ int main(int argc, char* argv[])
     {
       case OPTION_CPU_INFO:    cpuInfo(); break;
       case OPTION_HELP:        help(/* exitCode */ 0); break;
+      case OPTION_MAINTAIN_LOAD: maintainLoad(opts); break;
       case OPTION_NTH_PRIME:   nthPrime(opts); break;
       case OPTION_R:           RiemannR(opts); break;
       case OPTION_R_INVERSE:   RiemannR_inverse(opts); break;

@@ -24,3 +24,18 @@ foreach(file ${files})
                 $<TARGET_FILE_DIR:${binary_name}>)
     endif()
 endforeach()
+
+if(BUILD_PRIMESIEVE)
+    add_test(NAME maintain_load_options
+             COMMAND ${CMAKE_COMMAND} -DPRIMESIEVE=$<TARGET_FILE:primesieve>
+                     -DLINUX=$<STREQUAL:${CMAKE_SYSTEM_NAME},Linux>
+                     -P ${CMAKE_CURRENT_SOURCE_DIR}/maintain_load.cmake)
+    set_tests_properties(maintain_load_options PROPERTIES TIMEOUT 20)
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_test(NAME maintain_load_signal
+                 COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/maintain_load_signal.sh
+                         $<TARGET_FILE:primesieve>)
+        set_tests_properties(maintain_load_signal PROPERTIES TIMEOUT 10)
+    endif()
+endif()

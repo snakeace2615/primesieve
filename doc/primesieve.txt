@@ -40,11 +40,28 @@ OPTIONS
 *--cpu-info*::
 	Print CPU information: CPU name, frequency, number of cores, cache sizes, ...
 
+*--cpu-target*='PERCENT'::
+	Set the system CPU target for *--maintain-load*, from 1 to 100 percent.
+	The default is 30 percent. Requires *--maintain-load*.
+
 *-d, --dist*='DIST'::
 	Sieve the interval ['START', 'START' + 'DIST'].
 
 *-h, --help*::
 	Print this help menu.
+
+*--maintain-load*::
+	Maintain a target system CPU utilization on Linux using one thread and
+	short prime counting tasks. The default target is 30 percent and the
+	default timeout is unlimited. Sample /proc/stat every second and adjust
+	computation and sleeping accordingly. Pause computation when system CPU
+	utilization exceeds the target by more than 10 percentage points.
+	Utilization is averaged over time, not an instantaneous limit. Other
+	processes may exceed the target independently. One thread may not reach
+	the target on a multi-core or CPU-throttled system. I/O wait and stolen
+	CPU time are excluded from busy time. This mode accepts *--threads=1*,
+	but no sieve interval, *--count* or *--print*. Ctrl+C or SIGTERM stops it.
+	Status is printed once per minute; *--quiet* suppresses all normal output.
 
 *-n, --nth-prime*::
 	Find the nth prime, e.g. 100 *-n* finds the 100th prime. If 2 numbers 'N'
@@ -101,10 +118,10 @@ OPTIONS
 	Print the time elapsed in seconds.
 
 *--timeout*='SECS'::
-	Set the stress test timeout in seconds. Units of time for seconds, minutes,
+	Set the stress test or maintain-load timeout in seconds. Units for seconds, minutes,
 	hours, days and years are also supported with the suffix s, m, h, d or y.
 	E.g. *--timeout 10m* sets a timeout of 10 minutes. The default stress test
-	timeout is 24 hours.
+	timeout is 24 hours; maintain-load defaults to unlimited. Zero means unlimited.
 
 *-v, --version*::
 	Print version and license information.

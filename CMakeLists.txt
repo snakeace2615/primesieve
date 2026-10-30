@@ -77,6 +77,7 @@ endif()
 set(BIN_SRC src/app/CmdOptions.cpp
             src/app/help.cpp
             src/app/main.cpp
+            src/app/maintainLoad.cpp
             src/app/stressTest.cpp
             src/app/test.cpp)
 

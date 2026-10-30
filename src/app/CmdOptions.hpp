@@ -1,7 +1,7 @@
 ///
 /// @file  CmdOptions.hpp
 ///
-/// Copyright (C) 2025 Kim Walisch, <kim.walisch@gmail.com>
+/// Copyright (C) 2026 Kim Walisch, <kim.walisch@gmail.com>
 ///
 /// This file is distributed under the BSD License. See the COPYING
 /// file in the top level directory.
@@ -19,7 +19,9 @@ enum OptionID
 {
   OPTION_COUNT,
   OPTION_CPU_INFO,
+  OPTION_CPU_TARGET,
   OPTION_HELP,
+  OPTION_MAINTAIN_LOAD,
   OPTION_NTH_PRIME,
   OPTION_NO_STATUS,
   OPTION_NUMBER,
@@ -58,8 +60,9 @@ struct CmdOptions
   int flags = 0;
   int sieveSize = 0;
   int threads = 0;
-  // Stress test timeout in seconds.
-  // The default timeout is 24 hours (same as stress-ng).
+  int cpuTarget = 30;
+  // Stress test timeout in seconds (same default as stress-ng).
+  // Maintain-load defaults to unlimited unless --timeout is set.
   int64_t timeout = 24 * 3600;
   bool quiet = false;
   bool status = true;

@@ -333,8 +333,10 @@ CmdOptions parseOptions(int argc, char** argv)
     { "-c",                 std::make_pair(OPTION_COUNT, OPTIONAL_PARAM) },
     { "--count",            std::make_pair(OPTION_COUNT, OPTIONAL_PARAM) },
     { "--cpu-info",         std::make_pair(OPTION_CPU_INFO, NO_PARAM) },
+    { "--cpu-target",       std::make_pair(OPTION_CPU_TARGET, REQUIRED_PARAM) },
     { "-h",                 std::make_pair(OPTION_HELP, NO_PARAM) },
     { "--help",             std::make_pair(OPTION_HELP, NO_PARAM) },
+    { "--maintain-load",    std::make_pair(OPTION_MAINTAIN_LOAD, NO_PARAM) },
     { "-n",                 std::make_pair(OPTION_NTH_PRIME, NO_PARAM) },
     { "--nthprime",         std::make_pair(OPTION_NTH_PRIME, NO_PARAM) },
     { "--nth-prime",        std::make_pair(OPTION_NTH_PRIME, NO_PARAM) },
@@ -363,11 +365,22 @@ CmdOptions parseOptions(int argc, char** argv)
   };
 
   CmdOptions opts;
+  bool cpuTargetSet = false;
+  bool timeoutSet = false;
+  bool threadsSet = false;
+  bool sieveOptionSet = false;
 
   for (int i = 1; i < argc; i++)
   {
     Option opt = parseOption(argc, argv, i, optionMap);
     OptionID optionID = optionMap.at(opt.opt).first;
+    if (optionID == OPTION_COUNT ||
+        optionID == OPTION_PRINT ||
+        optionID == OPTION_DISTANCE)
+      sieveOptionSet = true;
+
+    if (optionID == OPTION_MAINTAIN_LOAD && !opt.val.empty())
+      throw primesieve_error("--maintain-load does not take a value");
 
     switch (optionID)
     {
@@ -375,15 +388,31 @@ CmdOptions parseOptions(int argc, char** argv)
       case OPTION_DISTANCE:    opts.optionDistance(opt); break;
       case OPTION_PRINT:       opts.optionPrint(opt); break;
       case OPTION_STRESS_TEST: opts.optionStressTest(opt); break;
-      case OPTION_TIMEOUT:     opts.optionTimeout(opt); break;
+      case OPTION_TIMEOUT:     opts.optionTimeout(opt); timeoutSet = true; break;
       case OPTION_SIZE:        opts.sieveSize = getVal<int>(opt); break;
-      case OPTION_THREADS:     opts.threads = getVal<int>(opt); break;
+      case OPTION_THREADS:     opts.threads = getVal<int>(opt); threadsSet = true; break;
+      case OPTION_CPU_TARGET:  opts.cpuTarget = getVal<int>(opt); cpuTargetSet = true; break;
       case OPTION_QUIET:       opts.quiet = true; break;
       case OPTION_NO_STATUS:   opts.status = false; break;
       case OPTION_TIME:        opts.time = true; break;
       case OPTION_NUMBER:      opts.numbers.push_back(getVal<uint64_t>(opt)); break;
       default:                 opts.setMainOption(optionID, opt.str);
     }
+  }
+
+  if (cpuTargetSet && opts.option != OPTION_MAINTAIN_LOAD)
+    throw primesieve_error("--cpu-target requires --maintain-load");
+
+  if (opts.option == OPTION_MAINTAIN_LOAD)
+  {
+    if (opts.cpuTarget < 1 || opts.cpuTarget > 100)
+      throw primesieve_error("--cpu-target must be between 1 and 100");
+    if (!opts.numbers.empty() || sieveOptionSet)
+      throw primesieve_error("--maintain-load does not accept sieve intervals, --count or --print");
+    if (threadsSet && opts.threads != 1)
+      throw primesieve_error("--maintain-load uses exactly one thread");
+    if (!timeoutSet)
+      opts.timeout = 0;
   }
 
   if (opts.quiet)

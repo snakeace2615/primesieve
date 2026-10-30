@@ -1,0 +1,20 @@
+[Unit]
+Description=primesieve controlled CPU load
+
+[Service]
+Type=simple
+DynamicUser=yes
+ExecStart=/usr/local/bin/primesieve --maintain-load --cpu-target=30 --timeout=0
+Restart=on-failure
+RestartSec=10s
+Nice=19
+CPUQuota=40%
+MemoryMax=64M
+TimeoutStopSec=5s
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

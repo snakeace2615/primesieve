@@ -113,6 +113,31 @@ You may cancel the stress test at any time using Ctrl+C.
 All tests passed successfully!
 ```
 
+## Controlled CPU load on Linux
+
+Use a single thread to maintain a system CPU utilization target (30% by
+default), reducing computation when other processes consume CPU time:
+
+```sh
+primesieve --maintain-load --cpu-target=30
+# Run for a limited time instead:
+primesieve --maintain-load --cpu-target=30 --timeout=5m
+```
+
+This mode runs indefinitely by default (`--timeout=0`). It samples `/proc/stat`
+every second and alternates short prime counting batches with sleeping.
+The target is a system-wide average, not an instantaneous cap or a per-process
+percentage. I/O wait and stolen CPU time are not counted as busy time.
+With the default target, computation pauses above 40% system CPU utilization.
+Other applications can still drive the system above that level. One thread may
+not reach the target on multi-core systems or under CPU quotas/host contention.
+In containers, `/proc/stat` may describe the host rather than the container.
+
+The counting interval is bounded, and primes are not stored or printed.
+Ctrl+C and SIGTERM stop the program. Status is printed every minute;
+`--quiet` suppresses normal output. See [Ubuntu deployment](doc/MAINTAIN_LOAD.md)
+for the service example, resource limits and validation procedure.
+
 ## Command-line options
 
 ```
@@ -126,6 +151,10 @@ Options:
                              count twin primes: -c2 or --count=2,
                              count prime triplets: -c3 or --count=3, ...
       --cpu-info             Print CPU information (cache sizes).
+      --cpu-target=PERCENT   System CPU target for --maintain-load, 1 to 100.
+                             Default: 30 percent.
+      --maintain-load        Maintain system CPU load on Linux using one
+                             thread. Runs indefinitely unless --timeout is set.
   -d, --dist=DIST            Sieve the interval [START, START + DIST].
   -n, --nth-prime            Find the nth prime.
                              primesieve 100 -n: finds the 100th prime,
@@ -145,7 +174,8 @@ Options:
   -t, --threads=NUM          Set the number of threads, NUM <= CPU cores.
                              Default setting: use all available CPU cores.
       --time                 Print the time elapsed in seconds.
-      --timeout=SEC          Set the stress test timeout in seconds. Supported
+      --timeout=SEC          Set stress test or maintain-load timeout; 0 means
+                             unlimited. Supported
                              units of time suffixes: s, m, h, d or y.
                              30 minutes timeout: --timeout 30m
 ```
